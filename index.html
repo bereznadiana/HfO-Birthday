@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: #BED3B6;
+      color: #151515;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 420px;
+      background: #ffffff;
+      border-radius: 28px;
+      padding: 35px 25px;
+      text-align: center;
+    }
+
+.cake {
+      font-size: 60px;
+      margin-bottom: 15px;
+    }
+
+    h1 {
+      font-size: 30px;
+      margin: 0 0 10px;
+    }
+
+    .hello {
+      font-size: 20px;
+      font-weight: bold;
+ margin-bottom: 8px;
+    }
+
+    .description {
+      font-size: 15px;
+      line-height: 1.5;
+      opacity: 0.7;
+      margin-bottom: 30px;
+    }
+
+    .date-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    select {
+      width: 100%;
+      padding: 16px 12px;
+      border: 2px solid #151515;
+      border-radius: 14px;
+      background: white;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .day {
+      width: 35%;
+    }
+
+ .month {
+      width: 65%;
+    }
+
+    button {
+      width: 100%;
+      border: none;
+      border-radius: 16px;
+      padding: 17px;
+      font-size: 17px;
+      font-weight: bold;
+      background: #151515;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+}
+
+    .note {
+      font-size: 12px;
+      opacity: 0.5;
+      margin-top: 15px;
+    }
+
+    #success {
+      display: none;
+    }
+
+    #success h2 {
+      font-size: 27px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card" id="form">
+
+    <div class="cake">🎂</div>
+
+    <h1>HfO Birthday</h1>
+
+    <div class="hello" id="hello">
+      Привіт 👋
+    </div>
+
+    <div class="description">
+      Коли тебе вітати?<br>
+      Залиш свій день народження, щоб ми точно тебе не забули 🤍
+    </div>
+
+  <div class="date-row">
+
+      <select id="day" class="day">
+        <option value="">День</option>
+      </select>
+
+      <select id="month" class="month">
+        <option value="">Місяць</option>
+        <option value="Січень">Січень</option>
+        <option value="Лютий">Лютий</option>
+        <option value="Березень">Березень</option>
+        <option value="Квітень">Квітень</option>
+  <option value="Травень">Травень</option>
+        <option value="Червень">Червень</option>
+        <option value="Липень">Липень</option>
+        <option value="Серпень">Серпень</option>
+        <option value="Вересень">Вересень</option>
+        <option value="Жовтень">Жовтень</option>
+        <option value="Листопад">Листопад</option>
+        <option value="Грудень">Грудень</option>
+      </select>
+
+    </div>
+
+    <button id="saveButton" onclick="saveBirthday()">
+      Зберегти 🎉
+    </button>
+
+    <div class="note">
+      Рік народження нам не потрібен :)
+    </div>
+
+  </div>
+
+
+ <div class="card" id="success">
+
+    <div class="cake">🥳</div>
+
+    <h2>Є!</h2>
+
+    <p>
+      Тепер ми точно тебе не забудемо 🤍
+    </p>
+
+  </div>
+
+
+<script>
+
+  const tg = window.Telegram.WebApp;
+
+tg.ready();
+tg.expand();
+
+let user = null;
+
+try {
+  user = tg.initDataUnsafe && tg.initDataUnsafe.user
+    ? tg.initDataUnsafe.user
+    : null;
+} catch (e) {
+  console.error("Telegram user error:", e);
+}
+
+if (user && user.id) {
+  document.getElementById("hello").innerText =
+    "Привіт, " + (user.first_name || "") + " 👋";
+} else {
+  document.getElementById("hello").innerText =
+    "Не вдалося отримати дані Telegram";
+
+  document.getElementById("saveButton").disabled = true;
+
+  document.querySelector(".description").innerHTML =
+    "Закрий цей екран і відкрий форму ще раз через кнопку бота 🎂";
+}
+
+
+  // Створюємо дні від 1 до 31
+  const daySelect = document.getElementById("day");
+
+  for (let i = 1; i <= 31; i++) {
+    const option = document.createElement("option");
+    option.value = i;
+    option.textContent = i;
+    daySelect.appendChild(option);
+  }
+
+
+  function saveBirthday() {
+
+    const day = document.getElementById("day").value;
+    const month = document.getElementById("month").value;
+
+    if (!day || !month) {
+      alert("Обери день і місяць 🎂");
+      return;
+    }
+
+    const button = document.getElementById("saveButton");
+
+    button.disabled = true;
+    button.innerText = "Зберігаємо...";
+
+    if (!user || !user.id) {
+    alert("Telegram не передав дані користувача. Відкрий форму через HfOBirthdayBot.");
+    return;
+  }
+
+const data = {
+      telegramId: user?.id || "",
+      name: user?.first_name || "",
+      username: user?.username
+        ? "@" + user.username
+        : "",
+      day: day,
+      month: month
+    };
+const API_URL = "https://script.google.com/macros/s/AKfycbywJlMYrHt_pNp976hD_sNt5TplUXqpMfvlN-V8BOF2G9h2v_fq2AHICdBKdD30t8w/exec";
+fetch(API_URL, {
+  method: "POST",
+  mode: "no-cors",
+  headers: {
+    "Content-Type": "text/plain;charset=utf-8"
+  },
+  body: JSON.stringify(data)
+})
+.then(function() {
+  document.getElementById("form").style.display = "none";
+  document.getElementById("success").style.display = "block";
+  if (tg.HapticFeedback) {
+    tg.HapticFeedback.notificationOccurred("success");
+  }
+})
+.catch(function(error) {
+  button.disabled = false;
+  button.innerText = "Зберегти 🎉";
+  alert("Щось пішло не так. Спробуй ще раз.");
+  console.error(error);
+});
+}
+
+
+
+  
+
+</script>
+
+</body>
+</html>
